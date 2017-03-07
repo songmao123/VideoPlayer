@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#8BC34A</color>
+    <color name="colorPrimaryDark">#689F38</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="colorWarning">#E91E63</color>
+    <color name="colorDivider">#EBEBEB</color>
+    <color name="colorSmallText">#8B8B8B</color>
+
+    <color name="background_light">#fafafa</color> <!-- grey 50 -->
+    <color name="selected_comment_background">#ffffffff</color>
+</resources>
