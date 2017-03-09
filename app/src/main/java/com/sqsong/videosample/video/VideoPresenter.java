@@ -30,6 +30,15 @@ public class VideoPresenter implements VideoContract.IVideoPresenter {
         }
     };
 
+    private IMediaPlayer.OnPreparedListener mPreparedListener = new IMediaPlayer.OnPreparedListener() {
+        @Override
+        public void onPrepared(IMediaPlayer iMediaPlayer) {
+            if (iMediaPlayer != null) {
+                iMediaPlayer.start();
+            }
+        }
+    };
+
     public VideoPresenter(VideoContract.VideoView videoView) {
         this.mVideoView = videoView;
         mVideoView.setPresenter(this);
@@ -134,13 +143,14 @@ public class VideoPresenter implements VideoContract.IVideoPresenter {
             AudioManager am = (AudioManager) ((Activity)mVideoView).getSystemService(Context.AUDIO_SERVICE);
             am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
             mMediaPlayer.setOnVideoSizeChangedListener(mVideoSizeChangeListener);
+            mMediaPlayer.setOnPreparedListener(mPreparedListener);
 
             mMediaPlayer.setDataSource(path);
             mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1);
             mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-auto-rotate", 1);
             mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-handle-resolution-change", 1);
             mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "opensles", 0);
-            mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "overlay-format", "");
+            mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "overlay-format", IjkMediaPlayer.SDL_FCC_RV32);
             mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1);
             mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "start-on-prepared", 0);
             mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 0);
@@ -148,7 +158,6 @@ public class VideoPresenter implements VideoContract.IVideoPresenter {
 
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mMediaPlayer.prepareAsync();
-            mMediaPlayer.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
