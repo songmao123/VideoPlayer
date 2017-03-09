@@ -4,7 +4,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
-import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -29,7 +28,6 @@ import io.reactivex.schedulers.Schedulers;
 
 public class MainPresenter implements MainContract.Presenter {
 
-    int num = 0;
     private MainContract.MainView mMainView;
 
     public MainPresenter(MainContract.MainView mainView) {
@@ -67,7 +65,6 @@ public class MainPresenter implements MainContract.Presenter {
                             }
                             cursor.close();
                         }
-                        SystemClock.sleep(3000);
                         return videoInfos;
                     }
                 })
@@ -79,12 +76,7 @@ public class MainPresenter implements MainContract.Presenter {
 
                     @Override
                     public void onNext(List<VideoBean> value) {
-                        if (num == 0) {
-                            mMainView.updateVideoList(null);
-                        } else {
-                            mMainView.updateVideoList(value);
-                        }
-                        num++;
+                        mMainView.updateVideoList(value);
                     }
 
                     @Override
