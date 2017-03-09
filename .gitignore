@@ -1,13 +1,6 @@
-.gradle
 .idea
-build
-*.iml
-/local.properties
 gradlew
-app/build
-gradle/
 gradlew.bat
-
 # Built application files
 *.apk
 *.ap_
