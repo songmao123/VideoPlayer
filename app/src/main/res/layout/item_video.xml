@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/background_light"
-    android:clickable="true"
-    android:clipToPadding="false"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
+    android:layout_marginTop="@dimen/activity_horizontal_margin"
     android:foreground="?android:selectableItemBackground"
-    android:orientation="vertical"
-    android:stateListAnimator="@animator/raise">
+    android:stateListAnimator="@animator/raise"
+    app:cardBackgroundColor="@color/colorBlackFour"
+    app:cardCornerRadius="3dp"
+    app:cardElevation="3dp">
 
-    <LinearLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -43,6 +46,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:layout_marginTop="12dp"
             android:orientation="vertical">
 
@@ -53,7 +57,7 @@
                 android:ellipsize="middle"
                 android:singleLine="true"
                 android:text="Game.of.Thrones"
-                android:textColor="@android:color/black"
+                android:textColor="@color/colorWhite"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -65,16 +69,10 @@
                 android:ellipsize="marquee"
                 android:singleLine="true"
                 android:text="/storage/emulated/0/Movies/Game.of.Thrones.mp4"
-                android:textColor="@color/colorSmallText"
+                android:textColor="#AAffffff"
                 android:textSize="14sp" />
 
         </LinearLayout>
 
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="2px"
-        android:background="@color/colorDivider" />
-
-</LinearLayout>
+</android.support.v7.widget.CardView>

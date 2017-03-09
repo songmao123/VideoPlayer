@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.sqsong.videosample.R;
 import com.sqsong.videosample.bean.VideoBean;
+import com.sqsong.videosample.util.DensityUtil;
 
 import java.util.List;
 
@@ -63,6 +64,13 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.Vide
                 }
             }
         });
+
+        if (position == mVideoLists.size() - 1) {
+            RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) holder.itemView.getLayoutParams();
+            params.bottomMargin = DensityUtil.dip2px(16);
+        } else {
+
+        }
     }
 
     @Override

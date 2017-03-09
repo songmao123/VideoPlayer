@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 
 import com.sqsong.videosample.adapter.VideoListAdapter;
 import com.sqsong.videosample.bean.VideoBean;
+import com.sqsong.videosample.util.AnimUtils;
 import com.sqsong.videosample.video.VideoPlayActivity;
 
 import java.util.ArrayList;
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
     private VideoListAdapter mVideoAdapter;
     private MainContract.Presenter mPresenter;
     private List<VideoBean> mVideoLists = new ArrayList<>();
+    private LinearLayoutManager mLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,11 +68,14 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
 
     private void initEvent() {
         setSupportActionBar(mToolBar);
+        setTitleFonts();
 
         mTipsLl.setOnClickListener(this);
         mSwipeLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorPrimaryDark, R.color.colorAccent);
         mSwipeLayout.setOnRefreshListener(this);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mLayoutManager = new LinearLayoutManager(getContext());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.addOnScrollListener(mRecyclerScrollListener);
         mVideoAdapter = new VideoListAdapter(this, mVideoLists);
         mVideoAdapter.setOnItemClickListener(this);
         mRecyclerView.setAdapter(mVideoAdapter);
@@ -77,6 +83,43 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
         mPresenter = new MainPresenter(this);
 
         checkPermission();
+    }
+
+    private RecyclerView.OnScrollListener mRecyclerScrollListener = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            if (newState == RecyclerView.SCROLL_STATE_IDLE
+                    && mLayoutManager.findFirstVisibleItemPosition() == 0
+                    && mLayoutManager.findViewByPosition(0).getTop() == mRecyclerView.getPaddingTop()
+                    && mToolBar.getTranslationZ() != 0) {
+                // at top, reset elevation
+                mToolBar.setTranslationZ(0f);
+            } else if (newState == RecyclerView.SCROLL_STATE_DRAGGING
+                    && mToolBar.getTranslationZ() != -1f) {
+                // grid scrolled, lower toolbar to allow content to pass in front
+                mToolBar.setTranslationZ(-1f);
+            }
+        }
+    };
+
+    private void setTitleFonts() {
+        View view = mToolBar.getChildAt(0);
+        if (view != null && view instanceof TextView) {
+            TextView titleText = (TextView) view;
+            Typeface type = Typeface.createFromAsset(getAssets(), "fonts/FredokaOne-Regular.ttf");
+            titleText.setTypeface(type);
+
+
+            titleText.setAlpha(0f);
+            titleText.setScaleX(0.5f);
+
+            titleText.animate()
+                    .alpha(1f)
+                    .scaleX(1f)
+                    .setStartDelay(500)
+                    .setDuration(800)
+                    .setInterpolator(AnimUtils.getFastOutSlowInInterpolator(this));
+        }
     }
 
     private void checkPermission() {

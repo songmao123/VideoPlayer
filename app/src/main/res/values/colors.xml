@@ -10,7 +10,13 @@
     <color name="colorPlayBg">#AA000000</color>
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorBlack">#000000</color>
+    <color name="colorBlackSecondary">#212121</color>
+    <color name="colorBlackTertiary">#303030</color>
+    <color name="colorBlackFour">#424242</color>
 
     <color name="background_light">#fafafa</color> <!-- grey 50 -->
     <color name="selected_comment_background">#ffffffff</color>
+    <color name="text_secondary_dark">#8a000000</color> <!-- 54% -->
+    <color name="text_tertiary_dark">#61000000</color> <!-- 38% -->
+    <color name="status_bar_back">#ff676767</color>
 </resources>
