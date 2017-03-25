@@ -13,6 +13,7 @@ public interface VideoContract {
 
     interface VideoView extends BaseView<IVideoPresenter> {
         void onVideoSizeChanged(int width, int height);
+        void onVideoPlayComplete();
     }
 
     interface IVideoPresenter extends BasePresenter {

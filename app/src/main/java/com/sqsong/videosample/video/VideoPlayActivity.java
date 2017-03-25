@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -22,6 +23,7 @@ import com.sqsong.videosample.R;
 import com.sqsong.videosample.bean.VideoBean;
 import com.sqsong.videosample.util.DensityUtil;
 
+import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.Locale;
 
@@ -30,7 +32,7 @@ import butterknife.ButterKnife;
 
 public class VideoPlayActivity extends AppCompatActivity implements View.OnClickListener, VideoContract.VideoView {
 
-    public static final int DEFAULT_SHOW_TIME = 10000;
+    public static final int DEFAULT_SHOW_TIME = 5000;
 
     @BindView(R.id.root_view)
     View mRootView;
@@ -68,14 +70,15 @@ public class VideoPlayActivity extends AppCompatActivity implements View.OnClick
     @BindView(R.id.duration_tv)
     TextView mDurationText;
 
+    private int mCurPosition;
     private boolean isDragging;
     private VideoBean mVideoInfo;
     private Formatter mFormatter;
     private boolean isPlaying = true;
-    private boolean isShowing = true;
     private int mTitleAnimHeight = -1;
     private int mControlAnimHeight = -1;
     private StringBuilder mFormatBuilder;
+    private boolean isPanelShowing = true;
     private VideoContract.IVideoPresenter mPresenter;
 
     private Runnable measureHeightRunnable = new Runnable() {
@@ -115,12 +118,14 @@ public class VideoPlayActivity extends AppCompatActivity implements View.OnClick
         public void onStartTrackingTouch(SeekBar seekBar) {
             isDragging = true;
             mSeekBar.removeCallbacks(progressRunnable);
+            mTitleContainer.removeCallbacks(hideControlRunnable);
         }
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
             isDragging = false;
             mSeekBar.post(progressRunnable);
+            mTitleContainer.postDelayed(hideControlRunnable, DEFAULT_SHOW_TIME);
         }
     };
 
@@ -144,6 +149,7 @@ public class VideoPlayActivity extends AppCompatActivity implements View.OnClick
     private void getIntentParams() {
         Intent intent = getIntent();
         if (intent != null) {
+            mCurPosition = intent.getIntExtra(MainActivity.CURRENT_VIDEO_POSITION, 0);
             mVideoInfo = intent.getParcelableExtra(MainActivity.VIDEO_INFO);
             if (mVideoInfo != null) {
                 mTitleText.setText(mVideoInfo.getVideoName());
@@ -173,11 +179,12 @@ public class VideoPlayActivity extends AppCompatActivity implements View.OnClick
 
         mTitleContainer.setPadding(0, DensityUtil.getStatusBarHeight(this), 0, 0);
         mSeekBar.setMax(1000);
-        mSeekBar.postDelayed(progressRunnable, 500);
+        mSeekBar.postDelayed(progressRunnable, 800);
 
         mRootView.post(measureHeightRunnable);
         mBackBtn.setOnClickListener(this);
         mPlayBtn.setOnClickListener(this);
+        mForwardBtn.setOnClickListener(this);
         mRootView.setOnClickListener(this);
         mSeekBar.setOnSeekBarChangeListener(seekBarChangeListener);
 
@@ -203,8 +210,20 @@ public class VideoPlayActivity extends AppCompatActivity implements View.OnClick
             case R.id.play_iv:
                 toggleVideoPlayStatus();
                 break;
+            case R.id.forward_iv:
+
+                break;
         }
     }
+
+    /*private void playNextVideo() {
+        int newPosition = mCurPosition + 1;
+        if (newPosition >= mVideoLists.size()) {
+            newPosition = 0;
+        }
+        mVideoInfo = mVideoLists.get(newPosition);
+        mPresenter.setVideoPath(mVideoInfo.getVideoPath());
+    }*/
 
     private void toggleVideoPlayStatus() {
         if (isPlaying) {
@@ -221,7 +240,7 @@ public class VideoPlayActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void toggleShowControlPanel() {
-        if (isShowing) {
+        if (isPanelShowing) {
             hideController();
         } else {
             showController();
@@ -232,12 +251,12 @@ public class VideoPlayActivity extends AppCompatActivity implements View.OnClick
         showStatusBar();
         ObjectAnimator.ofFloat(mTitleContainer, "translationY", -mTitleAnimHeight, 0).setDuration(300).start();
         ObjectAnimator.ofFloat(mControlContainer, "translationY", mControlAnimHeight, 0).setDuration(300).start();
-        isShowing = true;
+        isPanelShowing = true;
         delayHideControlPanel();
     }
 
     private void delayHideControlPanel() {
-        if (!isShowing) return;
+        if (!isPanelShowing) return;
         mTitleContainer.removeCallbacks(hideControlRunnable);
         mTitleContainer.postDelayed(hideControlRunnable, DEFAULT_SHOW_TIME);
     }
@@ -253,7 +272,7 @@ public class VideoPlayActivity extends AppCompatActivity implements View.OnClick
         hideStatusBar();
         ObjectAnimator.ofFloat(mTitleContainer, "translationY", 0, -mTitleAnimHeight).setDuration(300).start();
         ObjectAnimator.ofFloat(mControlContainer, "translationY", 0, mControlAnimHeight).setDuration(300).start();
-        isShowing = false;
+        isPanelShowing = false;
         mTitleContainer.removeCallbacks(hideControlRunnable);
     }
 
@@ -324,6 +343,19 @@ public class VideoPlayActivity extends AppCompatActivity implements View.OnClick
         params.height = newHeight;
         mSurfaceView.getHolder().setFixedSize(newWidth, newHeight);
         mSurfaceView.requestLayout();
+    }
+
+    @Override
+    public void onVideoPlayComplete() {
+        finish();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            mPresenter.releasePlayer();
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override

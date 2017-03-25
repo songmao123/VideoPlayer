@@ -18,8 +18,8 @@ public class VideoPresenter implements VideoContract.IVideoPresenter {
     public static final int STATE_PLAYING = 1;
     public static final int STATE_PAUSE = 2;
 
-
     private int mCurrentState = STATE_PLAYING;
+    private SurfaceHolder mSurfaceHolder;
     private IjkMediaPlayer mMediaPlayer;
     private VideoContract.VideoView mVideoView;
 
@@ -39,6 +39,15 @@ public class VideoPresenter implements VideoContract.IVideoPresenter {
         }
     };
 
+    private IMediaPlayer.OnCompletionListener mCompletionListener = new IMediaPlayer.OnCompletionListener() {
+        @Override
+        public void onCompletion(IMediaPlayer iMediaPlayer) {
+            if (mVideoView != null) {
+                mVideoView.onVideoPlayComplete();
+            }
+        }
+    };
+
     public VideoPresenter(VideoContract.VideoView videoView) {
         this.mVideoView = videoView;
         mVideoView.setPresenter(this);
@@ -50,8 +59,6 @@ public class VideoPresenter implements VideoContract.IVideoPresenter {
         // init player
         IjkMediaPlayer.loadLibrariesOnce(null);
         IjkMediaPlayer.native_profileBegin("libijkplayer.so");
-
-        mMediaPlayer = new IjkMediaPlayer();
     }
 
     public IjkMediaPlayer initMediaPlayer() {
@@ -70,7 +77,10 @@ public class VideoPresenter implements VideoContract.IVideoPresenter {
 
     @Override
     public void bindSurfaceHolderAndPlayer(SurfaceHolder holder) {
-        mMediaPlayer.setDisplay(holder);
+        this.mSurfaceHolder = holder;
+        if (mMediaPlayer != null) {
+            mMediaPlayer.setDisplay(holder);
+        }
     }
 
     @Override
@@ -79,15 +89,13 @@ public class VideoPresenter implements VideoContract.IVideoPresenter {
             mMediaPlayer.reset();
             mMediaPlayer.release();
             mMediaPlayer = null;
-            AudioManager am = (AudioManager) ((Activity)mVideoView).getSystemService(Context.AUDIO_SERVICE);
+            AudioManager am = (AudioManager) ((Activity) mVideoView).getSystemService(Context.AUDIO_SERVICE);
             am.abandonAudioFocus(null);
         }
     }
 
     @Override
     public void setVideoPath(String path) {
-        if (TextUtils.isEmpty(path)) return;
-
         openVideo(path);
     }
 
@@ -139,10 +147,15 @@ public class VideoPresenter implements VideoContract.IVideoPresenter {
     }
 
     private void openVideo(String path) {
+        if (TextUtils.isEmpty(path) || mSurfaceHolder == null) return;
+
         try {
-            AudioManager am = (AudioManager) ((Activity)mVideoView).getSystemService(Context.AUDIO_SERVICE);
+            releasePlayer();
+            mMediaPlayer = new IjkMediaPlayer();
+            AudioManager am = (AudioManager) ((Activity) mVideoView).getSystemService(Context.AUDIO_SERVICE);
             am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
             mMediaPlayer.setOnVideoSizeChangedListener(mVideoSizeChangeListener);
+            mMediaPlayer.setOnCompletionListener(mCompletionListener);
             mMediaPlayer.setOnPreparedListener(mPreparedListener);
 
             mMediaPlayer.setDataSource(path);
@@ -156,6 +169,8 @@ public class VideoPresenter implements VideoContract.IVideoPresenter {
             mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 0);
             mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", 48);
 
+            mMediaPlayer.setDisplay(mSurfaceHolder);
+            mMediaPlayer.setScreenOnWhilePlaying(true);
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mMediaPlayer.prepareAsync();
         } catch (Exception e) {

@@ -27,6 +27,7 @@ public interface MainContract {
 
         void fetchVideos();
 
+        void release();
     }
 
 }

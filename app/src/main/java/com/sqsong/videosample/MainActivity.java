@@ -33,9 +33,10 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
         SwipeRefreshLayout.OnRefreshListener, VideoListAdapter.OnItemClickListener {
 
     private static final int PERMISSION_CODE_READ_EXTERNAL_STORAGE = 100;
-    private static final int TPYE_TIP_PERMISSION_DENY = 1;
-    private static final int TPYE_TIP_NO_VIDEO_FILE = 2;
+    private static final int TYPE_TIP_PERMISSION_DENY = 1;
+    private static final int TYPE_TIP_NO_VIDEO_FILE = 2;
     public static final String VIDEO_INFO = "video_info";
+    public static final String CURRENT_VIDEO_POSITION = "current_video_position";
 
     @BindView(R.id.toolbar)
     Toolbar mToolBar;
@@ -54,8 +55,8 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
 
     private VideoListAdapter mVideoAdapter;
     private MainContract.Presenter mPresenter;
-    private List<VideoBean> mVideoLists = new ArrayList<>();
     private LinearLayoutManager mLayoutManager;
+    private List<VideoBean> mVideoLists = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getVideoList();
             } else {
-                showTips(TPYE_TIP_PERMISSION_DENY);
+                showTips(TYPE_TIP_PERMISSION_DENY);
             }
         }
     }
@@ -157,8 +158,9 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
     private void showTips(int type) {
         mRecyclerView.setVisibility(View.GONE);
         mTipsLl.setVisibility(View.VISIBLE);
+        mSwipeLayout.setRefreshing(false);
         mSwipeLayout.setEnabled(false);
-        if (type == TPYE_TIP_PERMISSION_DENY) {
+        if (type == TYPE_TIP_PERMISSION_DENY) {
             mTipsTv.setText("Please allow application access SDCard!");
         } else {
             mTipsTv.setText("There is no video on the phone!");
@@ -192,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
 
     @Override
     public void showEmpty() {
-        showTips(TPYE_TIP_NO_VIDEO_FILE);
+        showTips(TYPE_TIP_NO_VIDEO_FILE);
     }
 
     @Override
@@ -210,5 +212,14 @@ public class MainActivity extends AppCompatActivity implements MainContract.Main
         Intent intent = new Intent(this, VideoPlayActivity.class);
         intent.putExtra(VIDEO_INFO, videoInfo);
         startActivity(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mPresenter != null) {
+            mPresenter.release();
+            mPresenter = null;
+        }
     }
 }

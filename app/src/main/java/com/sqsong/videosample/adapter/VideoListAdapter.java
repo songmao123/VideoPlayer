@@ -21,9 +21,12 @@ import butterknife.ButterKnife;
  * Created by 青松 on 2017/3/7.
  */
 
-public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.VideoViewHolder> {
+public class VideoListAdapter extends RecyclerView.Adapter {
 
-    private Context mContext;
+    private static final int VIEW_TYPE_BLANK_ITEM = 0;
+    private static final int VIEW_TYPE_NORMAL_ITEM = 1;
+
+    private LayoutInflater mInflater;
     private List<VideoBean> mVideoLists;
     private OnItemClickListener mListener;
 
@@ -36,46 +39,59 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.Vide
     }
 
     public VideoListAdapter(Context context, List<VideoBean> videoLists) {
-        this.mContext = context;
         this.mVideoLists = videoLists;
+        this.mInflater = LayoutInflater.from(context);
     }
 
     @Override
-    public VideoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.item_video, parent, false);
-        return new VideoViewHolder(view);
-    }
-
-    @Override
-    public void onBindViewHolder(VideoViewHolder holder, int position) {
-        final VideoBean bean = mVideoLists.get(position);
-        holder.thumb_iv.setImageBitmap(bean.getVideoThumb());
-        holder.duration_tv.setText(bean.getDuration());
-        holder.name_tv.setText(bean.getVideoName());
-        holder.path_tv.setText(bean.getVideoPath());
-        holder.name_tv.setSelected(true);
-        holder.path_tv.setSelected(true);
-
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mListener != null) {
-                    mListener.onItemClicked(bean);
-                }
-            }
-        });
-
-        if (position == mVideoLists.size() - 1) {
-            RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) holder.itemView.getLayoutParams();
-            params.bottomMargin = DensityUtil.dip2px(16);
+    public int getItemViewType(int position) {
+        if (position == mVideoLists.size()) {
+            return VIEW_TYPE_BLANK_ITEM;
         } else {
+            return VIEW_TYPE_NORMAL_ITEM;
+        }
+    }
 
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_BLANK_ITEM) {
+            View view = mInflater.inflate(R.layout.item_blank, parent, false);
+            return new BlankViewHolder(view);
+        } else {
+            View view = mInflater.inflate(R.layout.item_video, parent, false);
+            return new VideoViewHolder(view);
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        int viewType = getItemViewType(position);
+        if (viewType == VIEW_TYPE_NORMAL_ITEM && holder instanceof VideoViewHolder) {
+            VideoViewHolder videoHolder = (VideoViewHolder) holder;
+
+            final VideoBean bean = mVideoLists.get(position);
+            videoHolder.thumb_iv.setImageBitmap(bean.getVideoThumb());
+            videoHolder.duration_tv.setText(bean.getDuration());
+            videoHolder.name_tv.setText(bean.getVideoName());
+            videoHolder.path_tv.setText(bean.getVideoPath());
+            videoHolder.name_tv.setSelected(true);
+            videoHolder.path_tv.setSelected(true);
+            videoHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mListener != null) {
+                        mListener.onItemClicked(bean);
+                    }
+                }
+            });
+        } else {
+            // blank view, do nothing.
         }
     }
 
     @Override
     public int getItemCount() {
-        return mVideoLists.size();
+        return mVideoLists.size() + 1;
     }
 
     class VideoViewHolder extends RecyclerView.ViewHolder {
@@ -98,6 +114,13 @@ public class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.Vide
             super(itemView);
             this.itemView = itemView;
             ButterKnife.bind(this, itemView);
+        }
+    }
+
+    class BlankViewHolder extends RecyclerView.ViewHolder {
+
+        public BlankViewHolder(View itemView) {
+            super(itemView);
         }
     }
 }
