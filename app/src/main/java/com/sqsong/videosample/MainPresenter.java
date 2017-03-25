@@ -75,6 +75,7 @@ public class MainPresenter implements MainContract.Presenter {
                     @Override
                     public void subscribe(ObservableEmitter<List<VideoBean>> e) throws Exception {
                         e.onNext(getVideoInfoList(context));
+                        e.onComplete();
                     }
                 });
             }
